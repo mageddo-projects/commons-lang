@@ -25,7 +25,7 @@ public class Groups {
   }
 
   protected static Groups of(Matcher m) {
-    final var groups = new Groups();
+    final Groups groups = new Groups();
     for (int i = 1; i <= m.groupCount(); i++) {
       groups.put(i, m.group(i));
     }

@@ -1,0 +1,30 @@
+plugins {
+  id 'java-library'
+  id 'net.researchgate.release' version '3.0.2'
+  id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
+}
+
+apply from: "${rootDir}/nexus.gradle"
+
+sourceCompatibility = JavaVersion.VERSION_1_8;
+targetCompatibility = JavaVersion.VERSION_1_8;
+
+
+release {
+
+  project.ext.set("release.useAutomaticVersion", true)
+  git {
+    requireBranch.set("master")
+  }
+  failOnCommitNeeded = false
+  failOnPublishNeeded = false
+  failOnUnversionedFiles = false
+  buildTasks = []
+}
+
+confirmReleaseVersion.doLast {
+  def f = file("${project.projectDir}/README.md")
+  def text = f.text
+  f.withWriter { w -> w << text.replaceAll("(:\\ )*\\d+\\.\\d+\\.\\d+", "\$1${version}")
+  }
+}

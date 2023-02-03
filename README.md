@@ -1,5 +1,5 @@
 ## Commons Lang
-A set of common utils for jdbc use
+A set of useful classes, evicting you repeating yourself, avoiding fatigue
 
 ### Regex
 
@@ -8,6 +8,10 @@ Regexes.group("https://www.youtube.com/watch?v=pvZmzT7KR3I", "v=([\\w\\-\\_]+)",
 // pvZmzT7KR3I
 ```
 
+## Installing
+
+```groovy
+```
 
 ## Building
 ### Build and install dep locally

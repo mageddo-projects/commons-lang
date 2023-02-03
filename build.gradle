@@ -4,11 +4,23 @@ plugins {
   id "io.github.gradle-nexus.publish-plugin" version "1.1.0"
 }
 
+repositories {
+  mavenCentral()
+}
+
 apply from: "${rootDir}/nexus.gradle"
 
 sourceCompatibility = JavaVersion.VERSION_1_8;
 targetCompatibility = JavaVersion.VERSION_1_8;
 
+dependencies {
+  testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
+  testImplementation("org.mockito:mockito-junit-jupiter:5.1.1")
+}
+
+test {
+  useJUnitPlatform()
+}
 
 release {
 

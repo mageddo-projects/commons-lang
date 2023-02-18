@@ -13,15 +13,17 @@ public class LruTTLCache implements Cache {
   private final Integer capacity;
   private final Map<String, Wrapper> store;
   private final Duration ttl;
+  private final boolean cacheNulls;
 
   public LruTTLCache(Duration ttl) {
-    this(null, ttl);
+    this(null, ttl, true);
   }
 
-  public LruTTLCache(Integer capacity, Duration ttl) {
+  public LruTTLCache(Integer capacity, Duration ttl, boolean cacheNulls) {
     this.capacity = capacity;
     this.store = Maps.lruMap(capacity);
     this.ttl = ttl;
+    this.cacheNulls = cacheNulls;
   }
 
   @Override
@@ -84,7 +86,7 @@ public class LruTTLCache implements Cache {
   }
 
   boolean checkExpired(String key) {
-    if (!this.store.containsKey(key)) {
+    if (!this.store.containsKey(key) || (!this.cacheNulls && this.store.get(key) == null)) {
       return true;
     }
     final boolean expired = this.store

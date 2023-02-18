@@ -1,4 +1,4 @@
-package com.mageddo.commons.lang.regex;
+package com.mageddo.commons.regex;
 
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;

@@ -1,5 +1,6 @@
 package com.mageddo.commons.lang.regex;
 
+import com.mageddo.commons.regex.Regexes;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;

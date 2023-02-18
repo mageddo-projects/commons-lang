@@ -6,6 +6,7 @@ import java.util.function.Function;
 
 import com.mageddo.commons.caching.internal.Wrapper;
 import com.mageddo.commons.collections.Maps;
+import com.mageddo.commons.lang.tuple.Pair;
 
 public class LruTTLCache implements Cache {
 
@@ -58,13 +59,19 @@ public class LruTTLCache implements Cache {
 
   @Override
   public <T> T computeIfAbsent(String key, Function<? super String, ? extends T> mappingFunction) {
+    return this.computeIfAbsent0(key, _key -> Pair.of(mappingFunction.apply(_key), this.ttl));
+  }
+
+  public <T> T computeIfAbsent0(
+      String key, Function<? super String, ? extends Pair<T, Duration>> mappingFunction
+  ) {
     synchronized (this) {
       if (this.containsKey(key)) {
         return this.get(key);
       }
-      final T v = mappingFunction.apply(key);
-      this.put(key, v);
-      return v;
+      final Pair<T, Duration> v = mappingFunction.apply(key);
+      this.put(key, v.getKey(), v.getValue());
+      return v.getKey();
     }
   }
 

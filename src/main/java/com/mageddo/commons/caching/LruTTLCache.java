@@ -33,7 +33,9 @@ public class LruTTLCache implements Cache {
   }
 
   public Cache put(String k, Object v, Duration ttl) {
-    this.store.put(k, Wrapper.of(v, ttl));
+    if (this.cacheNulls || v != null) {
+      this.store.put(k, Wrapper.of(v, ttl));
+    }
     return this;
   }
 
@@ -72,6 +74,10 @@ public class LruTTLCache implements Cache {
         return this.get(key);
       }
       final Pair<T, Duration> v = mappingFunction.apply(key);
+      if (v == null) {
+        this.put(key, null, this.ttl);
+        return null;
+      }
       this.put(key, v.getKey(), v.getValue());
       return v.getKey();
     }

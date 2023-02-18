@@ -1,4 +1,4 @@
-package com.mageddo.commons.lang.regex;
+package com.mageddo.commons.regex.regex;
 
 import java.util.HashMap;
 import java.util.Map;

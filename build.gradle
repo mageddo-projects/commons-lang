@@ -10,10 +10,21 @@ repositories {
 
 apply from: "${rootDir}/nexus.gradle"
 
-sourceCompatibility = JavaVersion.VERSION_1_8;
-targetCompatibility = JavaVersion.VERSION_1_8;
+sourceCompatibility = JavaVersion.VERSION_1_8
+targetCompatibility = JavaVersion.VERSION_1_8
+
+compileTestJava {
+  sourceCompatibility = JavaVersion.VERSION_17
+  targetCompatibility = JavaVersion.VERSION_17
+}
 
 dependencies {
+
+  compileOnly 'org.projectlombok:lombok:1.18.26'
+  annotationProcessor 'org.projectlombok:lombok:1.18.26'
+
+  testCompileOnly 'org.projectlombok:lombok:1.18.26'
+  testAnnotationProcessor 'org.projectlombok:lombok:1.18.26'
   testImplementation("org.junit.jupiter:junit-jupiter:5.9.2")
   testImplementation("org.mockito:mockito-junit-jupiter:5.1.1")
 }

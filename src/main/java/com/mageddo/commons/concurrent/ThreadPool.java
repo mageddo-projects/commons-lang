@@ -8,8 +8,12 @@ public class ThreadPool {
   private static final ScheduledExecutorService pool = create();
 
   public static ScheduledExecutorService create() {
+    return create(5);
+  }
+
+  public static ScheduledExecutorService create(int size) {
     return Executors.newScheduledThreadPool(
-        5,
+        size,
         Threads::createDaemonThread
     );
   }

@@ -7,9 +7,9 @@ import java.util.concurrent.SynchronousQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class ThreadPool {
+import com.mageddo.commons.lang.Singletons;
 
-  private static final ExecutorService pool = newCached(5);
+public class ThreadPool {
 
   public static ScheduledExecutorService newScheduled(int coreSize) {
     return Executors.newScheduledThreadPool(
@@ -28,6 +28,16 @@ public class ThreadPool {
   }
 
   public static ExecutorService main() {
-    return pool;
+    return Singletons.createOrGet(
+        "ThreadPool-cached",
+        () -> newCached(5)
+    );
+  }
+
+  public static ExecutorService scheduled() {
+    return Singletons.createOrGet(
+        "ThreadPool-schecheduled",
+        () -> newScheduled(5)
+    );
   }
 }

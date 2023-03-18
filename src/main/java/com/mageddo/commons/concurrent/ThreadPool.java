@@ -1,13 +1,10 @@
 package com.mageddo.commons.concurrent;
 
+import com.mageddo.commons.lang.Singletons;
+
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
-import java.util.concurrent.SynchronousQueue;
-import java.util.concurrent.ThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
-
-import com.mageddo.commons.lang.Singletons;
 
 public class ThreadPool {
 
@@ -20,13 +17,8 @@ public class ThreadPool {
     );
   }
 
-  public static ExecutorService newCached(int maxSize) {
-    return new ThreadPoolExecutor(
-        0, maxSize,
-        60L, TimeUnit.SECONDS,
-        new SynchronousQueue<>(),
-        Threads::createDaemonThread
-    );
+  public static ExecutorService newFixed(int maxSize) {
+    return Executors.newFixedThreadPool(maxSize, Threads::createDaemonThread);
   }
 
   public static ExecutorService main() {
@@ -39,8 +31,8 @@ public class ThreadPool {
    */
   public static ExecutorService main(final int maxSize) {
     return Singletons.createOrGet(
-        "ThreadPool-cached",
-        () -> newCached(maxSize)
+        "ThreadPool-fixed",
+        () -> newFixed(maxSize)
     );
   }
 

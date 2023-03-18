@@ -7,7 +7,7 @@ import com.mageddo.commons.concurrent.Threads;
 
 import org.junit.jupiter.api.Test;
 
-import static com.mageddo.commons.concurrent.ThreadPool.def;
+import static com.mageddo.commons.concurrent.ThreadPool.main;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 
@@ -69,7 +69,7 @@ class LruTTLCacheTest {
     for (int i = 0; i < 1000; i++) {
 
       final var key = String.valueOf(i % 3);
-      def().submit(() -> {});
+      main().submit(() -> {});
       cache.computeIfAbsent(key, (k) -> {
         counter.incrementAndGet();
         return "a value";

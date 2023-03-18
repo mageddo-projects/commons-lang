@@ -1,24 +1,33 @@
 package com.mageddo.commons.concurrent;
 
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.ThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 
 public class ThreadPool {
 
-  private static final ScheduledExecutorService pool = create();
+  private static final ExecutorService pool = newCached(5);
 
-  public static ScheduledExecutorService create() {
-    return create(5);
-  }
-
-  public static ScheduledExecutorService create(int size) {
+  public static ScheduledExecutorService newScheduled(int coreSize) {
     return Executors.newScheduledThreadPool(
-        size,
+        coreSize,
         Threads::createDaemonThread
     );
   }
 
-  public static ScheduledExecutorService def() {
+  public static ExecutorService newCached(int maxSize) {
+    return new ThreadPoolExecutor(
+        0, maxSize,
+        60L, TimeUnit.SECONDS,
+        new SynchronousQueue<>(),
+        Threads::createDaemonThread
+    );
+  }
+
+  public static ExecutorService main() {
     return pool;
   }
 }

@@ -44,7 +44,7 @@ public class ThreadPool {
     );
   }
 
-  public static ExecutorService scheduled() {
+  public static ScheduledExecutorService scheduled() {
     return scheduled(DEFAULT_SIZE);
   }
 
@@ -52,7 +52,7 @@ public class ThreadPool {
    * Will create a singleton pool with the specified size, the size specified on the JVM first
    * call will be considered to create  the pool.
    */
-  public static ExecutorService scheduled(final int coreSize) {
+  public static ScheduledExecutorService scheduled(final int coreSize) {
     return Singletons.createOrGet(
         "ThreadPool-schecheduled",
         () -> newScheduled(coreSize)

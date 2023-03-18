@@ -1,6 +1,7 @@
 package com.mageddo.commons.caching;
 
 
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -64,6 +65,11 @@ public class LruCache implements Cache {
     }
   }
 
+  @Override
+  public void clear() {
+    this.store.clear();
+  }
+
   public Integer getCapacity() {
     return capacity;
   }
@@ -72,4 +78,7 @@ public class LruCache implements Cache {
     return this.store.size();
   }
 
+  public Map<String, Object> asMap(){
+    return Collections.unmodifiableMap(this.store);
+  }
 }

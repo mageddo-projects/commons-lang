@@ -1,6 +1,7 @@
 package com.mageddo.commons.caching;
 
 import java.time.Duration;
+import java.util.Collections;
 import java.util.Map;
 import java.util.function.Function;
 
@@ -66,6 +67,11 @@ public class LruTTLCache implements Cache {
     return this.computeIfAbsent0(key, _key -> Pair.of(mappingFunction.apply(_key), this.ttl));
   }
 
+  @Override
+  public void clear() {
+    this.store.clear();
+  }
+
   public <T> T computeIfAbsent0(
       String key, Function<? super String, ? extends Pair<T, Duration>> mappingFunction
   ) {
@@ -104,5 +110,8 @@ public class LruTTLCache implements Cache {
     return expired;
   }
 
+  public Map<String, Wrapper> asMap(){
+    return Collections.unmodifiableMap(this.store);
+  }
 
 }

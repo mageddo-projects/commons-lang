@@ -54,6 +54,6 @@ public class Singletons {
   }
 
   public static void clear(String key) {
-    System.getProperties().remove(key);
+    store.remove(key);
   }
 }

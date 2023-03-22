@@ -3,10 +3,11 @@ package com.mageddo.commons.caching;
 import java.time.Duration;
 import java.util.Collections;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.function.Function;
 
 import com.mageddo.commons.caching.internal.Wrapper;
-import com.mageddo.commons.collections.Maps;
+import com.mageddo.commons.lang.Objects;
 import com.mageddo.commons.lang.tuple.Pair;
 
 public class LruTTLCache implements Cache {
@@ -22,7 +23,7 @@ public class LruTTLCache implements Cache {
 
   public LruTTLCache(Integer capacity, Duration ttl, boolean cacheNulls) {
     this.capacity = capacity;
-    this.store = Maps.lruMap(capacity);
+    this.store = new ConcurrentHashMap<>();
     this.ttl = ttl;
     this.cacheNulls = cacheNulls;
   }
@@ -34,10 +35,14 @@ public class LruTTLCache implements Cache {
   }
 
   public Cache put(String k, Object v, Duration ttl) {
-    if (this.cacheNulls || v != null) {
+    put0(k, v, ttl);
+    return this;
+  }
+
+  private void put0(String k, Object v, Duration ttl) {
+    if (this.canCacheValue(v)) {
       this.store.put(k, Wrapper.of(v, ttl));
     }
-    return this;
   }
 
   @Override
@@ -75,18 +80,19 @@ public class LruTTLCache implements Cache {
   public <T> T computeIfAbsent0(
       String key, Function<? super String, ? extends Pair<T, Duration>> mappingFunction
   ) {
-    synchronized (this) {
-      if (this.containsKey(key)) {
-        return this.get(key);
+
+    final Wrapper w = this.store.compute(key, (k, v) -> {
+      if (v != null && !v.hasExpired()) {
+        return v;
       }
-      final Pair<T, Duration> v = mappingFunction.apply(key);
-      if (v == null) {
-        this.put(key, null, this.ttl);
-        return null;
+
+      final Pair<T, Duration> nv = mappingFunction.apply(key);
+      if (nv == null && this.cacheNulls) {
+        return Wrapper.of(null, this.ttl);
       }
-      this.put(key, v.getKey(), v.getValue());
-      return v.getKey();
-    }
+      return Wrapper.of(nv.getKey(), nv.getValue());
+    });
+    return (T) Objects.mapOrNull(w, Wrapper::getValue);
   }
 
   public Integer getCapacity() {
@@ -97,20 +103,29 @@ public class LruTTLCache implements Cache {
     return this.store.size();
   }
 
+  boolean canCacheValue(Object v) {
+    return this.cacheNulls || v != null;
+  }
+
   boolean checkExpired(String key) {
     if (!this.store.containsKey(key) || (!this.cacheNulls && this.store.get(key) == null)) {
       return true;
     }
-    final boolean expired = this.store
-        .get(key)
-        .hasExpired();
+    final boolean expired = this.isExpired(key);
     if (expired) {
       this.store.remove(key);
     }
     return expired;
   }
 
-  public Map<String, Wrapper> asMap(){
+  private boolean isExpired(String key) {
+    return this.store.containsKey(key)
+        && this.store
+        .get(key)
+        .hasExpired();
+  }
+
+  public Map<String, Wrapper> asMap() {
     return Collections.unmodifiableMap(this.store);
   }
 

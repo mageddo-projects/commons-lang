@@ -11,10 +11,13 @@ import com.mageddo.commons.concurrent.Threads;
 import org.apache.commons.lang3.time.StopWatch;
 import org.junit.jupiter.api.Test;
 
+import lombok.extern.slf4j.Slf4j;
+
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Slf4j
 class LruTTLCacheTest {
 
   @Test
@@ -133,6 +136,7 @@ class LruTTLCacheTest {
       final var key = String.valueOf(record);
       pool.submit(() -> {
         cache.computeIfAbsent(key, (k) -> {
+          log.info("key={}, hashCode={}", k, k.hashCode());
           counter.incrementAndGet();
           Threads.sleep(sleepTime);
           return "a value";
@@ -156,7 +160,6 @@ class LruTTLCacheTest {
   static ExecutorService createPool() {
     return ThreadPool.newFixed(10);
   }
-
 
   static void waitTermination(ExecutorService pool) {
     ThreadPool.terminateAndWait(pool, Duration.ofSeconds(5));

@@ -4,8 +4,8 @@ import java.time.Duration;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
-import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentSkipListSet;
 import java.util.function.Function;
 
 import com.mageddo.commons.caching.internal.Wrapper;
@@ -16,11 +16,12 @@ import com.mageddo.commons.lang.tuple.Pair;
 public class LruTTLCache implements Cache {
 
   private final Integer capacity;
+  private final Map<String, Object> _lock;
   private final Map<String, Wrapper> store;
   private final Duration ttl;
   private final boolean cacheNulls;
-  private final TreeSet<WrapperIndex> leastUsedIndex;
-  private final TreeSet<WrapperIndex> expirationIndex;
+  private final ConcurrentSkipListSet<WrapperIndex> leastUsedIndex;
+  private final ConcurrentSkipListSet<WrapperIndex> expirationIndex;
 
   public LruTTLCache(Duration ttl) {
     this(null, ttl, true);
@@ -32,11 +33,12 @@ public class LruTTLCache implements Cache {
 
   public LruTTLCache(Integer capacity, Duration ttl, boolean cacheNulls) {
     this.capacity = capacity;
+    this._lock = new ConcurrentHashMap<>();
     this.store = new ConcurrentHashMap<>();
     this.ttl = ttl;
     this.cacheNulls = cacheNulls;
-    this.leastUsedIndex = new TreeSet<>(WrapperIndex.leastUsedIndex());
-    this.expirationIndex = new TreeSet<>(WrapperIndex.expirationIndex());
+    this.leastUsedIndex = new ConcurrentSkipListSet<>(WrapperIndex.leastUsedIndex());
+    this.expirationIndex = new ConcurrentSkipListSet<>(WrapperIndex.expirationIndex());
   }
 
   @Override
@@ -75,21 +77,25 @@ public class LruTTLCache implements Cache {
       String key, Function<? super String, ? extends Pair<T, Duration>> mappingFunction
   ) {
 
-    final Wrapper w = this.store.compute(key, (k, v) -> {
-
-      if (v != null && !v.hasExpired()) {
-        return v;
-      }
-
+    this._lock.compute(key, (_1, _2) -> {
       this.checkSizeAndExpiration();
+      final Wrapper w = this.store.compute(key, (k, v) -> {
 
-      final Pair<T, Duration> nv = mappingFunction.apply(key);
-      if (nv == null && this.cacheNulls) {
-        return this.updateIndexes(k, Wrapper.of(null, this.ttl));
-      }
-      return this.updateIndexes(k, Wrapper.of(nv.getKey(), nv.getValue()));
+        if (v != null && !v.hasExpired()) {
+          return v;
+        }
+
+        final Pair<T, Duration> nv = mappingFunction.apply(key);
+        if (nv == null && this.cacheNulls) {
+          return Wrapper.of(null, this.ttl);
+        }
+        return Wrapper.of(nv.getKey(), nv.getValue());
+
+      });
+      this.updateIndexes(key, w);
+      return null;
     });
-    return (T) Objects.mapOrNull(w, Wrapper::getValue);
+    return (T) Objects.mapOrNull(this.store.get(key), Wrapper::getValue);
   }
 
   public Integer getCapacity() {
@@ -144,6 +150,7 @@ public class LruTTLCache implements Cache {
       final boolean expired = ind
           .getWrapper()
           .hasExpired();
+//      System.out.printf("expired: %s, expired=%b%n", ind.getWrapper().getWillExpireAt(), expired);
       if (!expired) {
         break;
       }

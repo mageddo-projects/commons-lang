@@ -226,8 +226,6 @@ class LruTTLCacheTest {
 
   }
 
-
-
   static ExecutorService createPool() {
     return ThreadPool.newFixed(10);
   }

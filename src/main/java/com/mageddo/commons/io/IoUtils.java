@@ -21,8 +21,8 @@ public class IoUtils {
   }
 
   public static Properties loadPropertiesFromResources(String path) {
-    final var in = getResourceAsStream(path);
-    final var properties = new Properties();
+    final InputStream in = getResourceAsStream(path);
+    final Properties properties = new Properties();
     try {
       properties.load(in);
       return properties;

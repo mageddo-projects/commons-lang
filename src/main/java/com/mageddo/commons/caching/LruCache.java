@@ -64,6 +64,11 @@ public class LruCache implements Cache {
     this.store.clear();
   }
 
+  @Override
+  public boolean isEmpty() {
+    return this.store.isEmpty();
+  }
+
   public Integer getCapacity() {
     return capacity;
   }

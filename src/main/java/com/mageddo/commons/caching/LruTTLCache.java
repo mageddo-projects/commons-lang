@@ -65,7 +65,13 @@ public class LruTTLCache implements Cache {
 
   @Override
   public <T> T computeIfAbsent(String key, Function<? super String, ? extends T> mappingFunction) {
-    return this.computeIfAbsent0(key, _key -> Pair.of(mappingFunction.apply(_key), this.ttl));
+    return this.computeIfAbsentWithTTL(key, k -> {
+      final T v = mappingFunction.apply(k);
+      if (v == null && !this.cacheNulls) {
+        return null;
+      }
+      return Pair.of(v, this.ttl);
+    });
   }
 
   @Override
@@ -73,7 +79,7 @@ public class LruTTLCache implements Cache {
     this.store.clear();
   }
 
-  public <T> T computeIfAbsent0(
+  public <T> T computeIfAbsentWithTTL(
       String key, Function<? super String, ? extends Pair<T, Duration>> mappingFunction
   ) {
 
@@ -86,8 +92,11 @@ public class LruTTLCache implements Cache {
         }
 
         final Pair<T, Duration> nv = mappingFunction.apply(key);
-        if (nv == null && this.cacheNulls) {
-          return Wrapper.of(null, this.ttl);
+        if (nv == null) {
+          if (this.cacheNulls) {
+            return Wrapper.of(null, this.ttl);
+          }
+          return null;
         }
         return Wrapper.of(nv.getKey(), nv.getValue());
 
@@ -129,6 +138,9 @@ public class LruTTLCache implements Cache {
   }
 
   private Wrapper updateIndexes(String key, Wrapper wrapper) {
+    if (wrapper == null) {
+      return null;
+    }
     final WrapperIndex ind = WrapperIndex.of(key, wrapper);
     this.leastUsedIndex.remove(ind);
     this.leastUsedIndex.add(ind);
@@ -181,4 +193,8 @@ public class LruTTLCache implements Cache {
     return Collections.unmodifiableMap(this.store);
   }
 
+  @Override
+  public boolean isEmpty() {
+    return this.store.isEmpty();
+  }
 }

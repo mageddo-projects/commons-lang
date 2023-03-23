@@ -16,4 +16,6 @@ public interface Cache {
   <T> T computeIfAbsent(String key, Function<? super String, ? extends T> mappingFunction);
 
   void clear();
+
+  boolean isEmpty();
 }

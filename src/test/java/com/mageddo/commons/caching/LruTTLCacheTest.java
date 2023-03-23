@@ -16,6 +16,7 @@ import lombok.extern.slf4j.Slf4j;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 @Slf4j
@@ -225,6 +226,25 @@ class LruTTLCacheTest {
     assertTrue(time <= sleepTime + threshold, String.valueOf(time));
 
   }
+
+  @Test
+  void mustNotCacheNulls() {
+
+    // arrange
+    final var key = "x";
+    final var cache = new LruTTLCache(10, Duration.ofSeconds(10), false);
+    final var counter = new AtomicInteger();
+
+    // act
+    final var v = cache.computeIfAbsent(key, s -> null);
+
+    // assert
+    assertNull(v);
+    assertEquals(0, counter.get());
+    assertTrue(cache.isEmpty());
+
+  }
+
 
   static ExecutorService createPool() {
     return ThreadPool.newFixed(10);

@@ -16,7 +16,7 @@ public class Wrapper {
 
   @Getter
   @NonNull
-  private final LocalDateTime willExpireAt;
+  private final LocalDateTime expiresAt;
 
   @Getter
   @NonNull
@@ -35,7 +35,7 @@ public class Wrapper {
   public boolean hasExpired() {
     return LocalDateTime
         .now()
-        .isAfter(this.willExpireAt)
+        .isAfter(this.expiresAt)
         ;
   }
 

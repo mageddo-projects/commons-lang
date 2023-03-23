@@ -159,6 +159,8 @@ public class LruTTLCache implements Cache {
     }
   }
 
+  // todo necessary to create a queue to add the access counter
+  //     and create a thread to update the index
   private void removeLeastUsed() {
     if (this.capacity == null || this.getSize() < this.capacity) {
       return;

@@ -27,12 +27,6 @@ public class LruCache implements Cache {
   }
 
   @Override
-  public Cache put(String k, Object v) {
-    this.store.put(k, v);
-    return this;
-  }
-
-  @Override
   public boolean containsKey(String key) {
     return this.store.containsKey(key);
   }
@@ -60,7 +54,7 @@ public class LruCache implements Cache {
         return this.get(key);
       }
       final T v = mappingFunction.apply(key);
-      this.put(key, v);
+      this.store.put(key, v);
       return v;
     }
   }

@@ -4,8 +4,6 @@ import java.util.function.Function;
 
 public interface Cache {
 
-  Cache put(String k, Object v);
-
   boolean containsKey(String key);
 
   <T> T get(String k);

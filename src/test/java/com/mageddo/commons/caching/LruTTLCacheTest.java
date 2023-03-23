@@ -2,6 +2,7 @@ package com.mageddo.commons.caching;
 
 import java.time.Duration;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -156,6 +157,76 @@ class LruTTLCacheTest {
     assertTrue(time <= sleepTime + threshold, String.valueOf(time));
 
   }
+
+
+  @Test
+  void mustRespectCacheSizeLimit() {
+    // arrange
+    final var cache = new LruTTLCache(1, Duration.ofHours(1));
+
+    // act
+    cache.computeIfAbsent("key1", s -> true);
+    cache.computeIfAbsent("key2", s -> true);
+
+    // assert
+    assertEquals(1, cache.getSize());
+  }
+
+
+  @Test
+  void mustRemoveExpired() {
+    // arrange
+    final var cache = new LruTTLCache(100, Duration.ofMillis(200));
+
+    // act
+    cache.computeIfAbsent("key1", s -> true);
+    Threads.sleep(200);
+
+    cache.computeIfAbsent("key2", s -> true);
+
+    // assert
+    assertEquals(1, cache.getSize());
+    assertEquals("[key2]", new TreeSet<>(cache.asMap().keySet()).toString());
+  }
+
+  @Test
+  void mustRemoveExpiredEntries() {
+
+    // arrange
+    final var cache = new LruTTLCache(Duration.ofSeconds(50));
+    final var counter = new AtomicInteger();
+    final var records = List.of(1, 2, 3, 3);
+    final var sleepTime = 500;
+    final var stopWatch = StopWatch.createStarted();
+    final var pool = createPool();
+
+    // act
+    for (final var record : records) {
+      final var key = String.valueOf(record);
+      pool.submit(() -> {
+        cache.computeIfAbsent(key, (k) -> {
+          log.info("key={}, hashCode={}", k, k.hashCode());
+          counter.incrementAndGet();
+          Threads.sleep(sleepTime);
+          return "a value";
+        });
+      });
+
+    }
+
+    // assert
+    waitTermination(pool);
+
+    final var time = stopWatch.getTime();
+
+    assertEquals(3, counter.get());
+
+    final var threshold = 100;
+    assertTrue(time <= sleepTime + threshold, String.valueOf(time));
+
+  }
+
+
 
   static ExecutorService createPool() {
     return ThreadPool.newFixed(10);

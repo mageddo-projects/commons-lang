@@ -20,7 +20,7 @@ public class LruTTLCache implements Cache {
   private final Duration ttl;
   private final boolean cacheNulls;
   private final TreeSet<WrapperIndex> leastUsedIndex;
-//  private final Set<Wrapper> expirationIndex;
+  private final TreeSet<WrapperIndex> expirationIndex;
 
   public LruTTLCache(Duration ttl) {
     this(null, ttl, true);
@@ -36,6 +36,7 @@ public class LruTTLCache implements Cache {
     this.ttl = ttl;
     this.cacheNulls = cacheNulls;
     this.leastUsedIndex = new TreeSet<>(WrapperIndex.leastUsedIndex());
+    this.expirationIndex = new TreeSet<>(WrapperIndex.expirationIndex());
   }
 
   @Override
@@ -125,11 +126,34 @@ public class LruTTLCache implements Cache {
     final WrapperIndex ind = WrapperIndex.of(key, wrapper);
     this.leastUsedIndex.remove(ind);
     this.leastUsedIndex.add(ind);
+
+    this.expirationIndex.remove(ind);
+    this.expirationIndex.add(ind);
     return wrapper;
   }
 
   private void checkSizeAndExpiration() {
-    if (this.getSize() < this.capacity) {
+    this.removeExpired();
+    this.removeLeastUsed();
+  }
+
+  private void removeExpired() {
+    final Iterator<WrapperIndex> it = this.expirationIndex.iterator();
+    while (it.hasNext()) {
+      final WrapperIndex ind = it.next();
+      final boolean expired = ind
+          .getWrapper()
+          .hasExpired();
+      if (!expired) {
+        break;
+      }
+      this.store.remove(ind.getKey());
+      it.remove();
+    }
+  }
+
+  private void removeLeastUsed() {
+    if (this.capacity == null || this.getSize() < this.capacity) {
       return;
     }
     final Iterator<WrapperIndex> it = this.leastUsedIndex.iterator();

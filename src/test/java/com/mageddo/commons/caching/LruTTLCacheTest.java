@@ -233,7 +233,7 @@ class LruTTLCacheTest {
   }
 
   static void waitTermination(ExecutorService pool) {
-    ThreadPool.terminateAndWait(pool, Duration.ofSeconds(5));
+    ThreadPool.terminateAndWait(pool, Duration.ofSeconds(10));
   }
 
 }

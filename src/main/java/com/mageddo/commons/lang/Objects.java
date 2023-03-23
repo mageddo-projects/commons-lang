@@ -5,6 +5,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class Objects {
+
   public static <T> T firstNonNull(T... o) {
     for (T t : o) {
       if (t != null) {
@@ -26,5 +27,12 @@ public class Objects {
       return s.get();
     }
     return o;
+  }
+
+  public static String toString(Object o) {
+    if (o == null) {
+      return null;
+    }
+    return o.toString();
   }
 }

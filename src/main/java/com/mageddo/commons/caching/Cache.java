@@ -4,8 +4,6 @@ import java.util.function.Function;
 
 public interface Cache {
 
-  Cache put(String k, Object v);
-
   boolean containsKey(String key);
 
   <T> T get(String k);
@@ -18,4 +16,6 @@ public interface Cache {
   <T> T computeIfAbsent(String key, Function<? super String, ? extends T> mappingFunction);
 
   void clear();
+
+  boolean isEmpty();
 }

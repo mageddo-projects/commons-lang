@@ -1,10 +1,13 @@
 package com.mageddo.commons.concurrent;
 
-import com.mageddo.commons.lang.Singletons;
-
+import java.time.Duration;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.TimeUnit;
+
+import com.mageddo.commons.lang.Singletons;
+import com.mageddo.commons.lang.exception.UnchekedInterruptedException;
 
 public class ThreadPool {
 
@@ -49,5 +52,14 @@ public class ThreadPool {
         "ThreadPool-schecheduled",
         () -> newScheduled(coreSize)
     );
+  }
+
+  public static void terminateAndWait(ExecutorService pool, Duration duration) {
+    try {
+      pool.shutdown();
+      pool.awaitTermination(duration.toMillis(), TimeUnit.MILLISECONDS);
+    } catch (InterruptedException e) {
+      throw new UnchekedInterruptedException(e);
+    }
   }
 }

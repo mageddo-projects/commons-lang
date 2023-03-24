@@ -60,4 +60,12 @@ public class Regexes {
     }
     return matcher;
   }
+
+  public static boolean matches(String str, Pattern pattern) {
+    final Matcher matcher = matcher(str, pattern);
+    if (matcher == null) {
+      return false;
+    }
+    return matcher.matches();
+  }
 }

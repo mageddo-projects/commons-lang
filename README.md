@@ -11,7 +11,7 @@ Regexes.group("https://www.youtube.com/watch?v=pvZmzT7KR3I", "v=([\\w\\-\\_]+)",
 ## Installing
 
 ```groovy
-implementation 'com.mageddo.commons:commons-lang:0.1.20'
+implementation 'com.mageddo.commons:commons-lang:0.1.21'
 ```
 
 ## Building

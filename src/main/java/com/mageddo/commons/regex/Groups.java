@@ -11,12 +11,22 @@ public class Groups {
   Groups() {
   }
 
+  /**
+   * @param group - starting from 1
+   */
   public String get(int group) {
     return this.groups.get(group);
   }
 
+  /**
+   * @param group  - Starting from 1
+   */
   public <R> R get(int group, Converter<R> fn) {
     return fn.convert(get(group));
+  }
+
+  public int size(){
+    return this.groups.size();
   }
 
   protected Groups put(int group, String value) {
